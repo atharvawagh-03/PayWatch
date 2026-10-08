@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  paywatch-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paywatch-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    restart: unless-stopped

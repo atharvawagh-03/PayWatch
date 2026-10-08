@@ -1,0 +1,86 @@
+# PayWatch Configuration
+version: "1.0.0"
+seed: 42
+
+generator:
+  num_transactions: 12000
+  fraud_rate: 0.035
+  num_users: 500
+  num_merchants: 80
+  start_date: "2026-08-01T00:00:00+05:30"
+  duration_days: 60
+  output_raw_path: "data/raw_transactions.csv"
+
+features:
+  velocity_window_hours: 1
+  min_history_per_user: 5
+  time_gap_threshold_seconds: 120
+  categorical_columns:
+    - "merchant_category"
+    - "transaction_type"
+    - "device_type"
+    - "upi_channel"
+  numeric_columns:
+    - "amount"
+    - "amount_ratio_to_mean"
+    - "amount_zscore"
+    - "tx_count_last_1h"
+    - "time_since_last_tx_sec"
+    - "recipient_tx_count_24h"
+    - "is_new_device"
+    - "is_new_location"
+    - "hour_of_day"
+    - "is_weekend"
+
+iqr:
+  k_factor: 1.5
+  min_samples_per_user: 5
+  columns_to_check:
+    - "amount"
+    - "tx_count_last_1h"
+    - "amount_zscore"
+
+isolation_forest:
+  n_estimators: 150
+  contamination: 0.035
+  max_samples: 256
+  random_state: 42
+  model_path: "models/isolation_forest.joblib"
+  scaler_path: "models/scaler.joblib"
+  feature_names_path: "models/feature_names.joblib"
+
+timeseries:
+  rolling_window_hours: 24
+  std_multiplier: 2.8
+  burst_interval_seconds: 180
+  burst_count_threshold: 4
+
+ensemble:
+  weights:
+    iqr: 0.30
+    isolation_forest: 0.40
+    timeseries: 0.30
+  risk_levels:
+    low:
+      min_flags: 0
+      max_flags: 0
+      action: "allow"
+    medium:
+      min_flags: 1
+      max_flags: 1
+      action: "mark_for_review"
+    high:
+      min_flags: 2
+      max_flags: 2
+      action: "escalate"
+    critical:
+      min_flags: 3
+      max_flags: 3
+      action: "escalate_with_priority"
+
+api:
+  title: "PayWatch Real-time UPI Fraud Detection API"
+  version: "1.0.0"
+  host: "0.0.0.0"
+  port: 8000
+  database_url: "sqlite:///./data/paywatch.db"

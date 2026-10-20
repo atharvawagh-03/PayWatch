@@ -2,13 +2,14 @@
 Database configuration and session management for Flagged Transactions (SQLite).
 """
 
+import os
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from src.config import get_config
 
 config = get_config()
-db_url = config.api.get("database_url", "sqlite:///./data/paywatch.db")
+db_url = os.getenv("DATABASE_URL", config.api.get("database_url", "sqlite:///./data/paywatch.db"))
 
 # Ensure parent directory exists for SQLite
 if db_url.startswith("sqlite:///"):

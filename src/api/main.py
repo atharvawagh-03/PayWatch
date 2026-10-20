@@ -114,6 +114,23 @@ def _persist_flagged_if_needed(tx_dict: dict, score_result: dict, db: Session):
             db.commit()
 
 
+@app.get("/", tags=["System"])
+def root():
+    return {
+        "service": "PayWatch Real-time UPI Fraud Detection API",
+        "version": config.version,
+        "status": "online",
+        "docs": "/docs",
+        "health": "/health",
+        "endpoints": {
+            "score": "POST /score",
+            "batch_score": "POST /score/batch",
+            "flagged": "GET /flagged",
+            "review": "PATCH /flagged/{id}/review"
+        }
+    }
+
+
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 def health():
     return HealthResponse(
